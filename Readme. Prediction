@@ -1,0 +1,121 @@
+# =========================================
+# CUSTOMER CHURN PREDICTION SYSTEM
+# =========================================
+
+# Import Libraries
+import pandas as pd
+import matplotlib.pyplot as plt
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report
+
+# =========================================
+# LOAD DATASET
+# =========================================
+
+data = pd.read_csv("customer_churn.csv")
+
+print(data.head())
+
+# =========================================
+# HANDLE MISSING VALUES
+# =========================================
+
+data.fillna(0, inplace=True)
+
+# =========================================
+# ENCODE CATEGORICAL COLUMNS
+# =========================================
+
+le = LabelEncoder()
+
+data['Gender'] = le.fit_transform(data['Gender'])
+data['Contract'] = le.fit_transform(data['Contract'])
+
+# =========================================
+# FEATURES & TARGET
+# =========================================
+
+X = data[['Age', 'MonthlyCharges', 'Tenure',
+          'Gender', 'Contract']]
+
+y = data['Churn']
+
+# =========================================
+# TRAIN TEST SPLIT
+# =========================================
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y,
+    test_size=0.2,
+    random_state=42
+)
+
+# =========================================
+# LOGISTIC REGRESSION MODEL
+# =========================================
+
+lr_model = LogisticRegression()
+
+lr_model.fit(X_train, y_train)
+
+lr_prediction = lr_model.predict(X_test)
+
+# =========================================
+# RANDOM FOREST MODEL
+# =========================================
+
+rf_model = RandomForestClassifier(n_estimators=100)
+
+rf_model.fit(X_train, y_train)
+
+rf_prediction = rf_model.predict(X_test)
+
+# =========================================
+# ACCURACY
+# =========================================
+
+print("\nLogistic Regression Accuracy:")
+print(accuracy_score(y_test, lr_prediction))
+
+print("\nRandom Forest Accuracy:")
+print(accuracy_score(y_test, rf_prediction))
+
+# =========================================
+# CLASSIFICATION REPORT
+# =========================================
+
+print("\nClassification Report:")
+print(classification_report(y_test, rf_prediction))
+
+# =========================================
+# VISUALIZATION
+# =========================================
+
+plt.figure(figsize=(8,5))
+
+plt.hist(data['MonthlyCharges'])
+
+plt.title("Monthly Charges Distribution")
+
+plt.xlabel("Monthly Charges")
+
+plt.ylabel("Customers")
+
+plt.show()
+
+# =========================================
+# SAMPLE PREDICTION
+# =========================================
+
+sample_data = [[25, 500, 12, 1, 0]]
+
+prediction = rf_model.predict(sample_data)
+
+if prediction[0] == 1:
+    print("\nCustomer Will Leave")
+else:
+    print("\nCustomer Will Stay")
